@@ -19,6 +19,9 @@ if(args.indexOf('--delete-relationships') > -1){
 if(args.indexOf('--delete-users') > -1){
     users.deleteUsers();
 }
+if(args.indexOf('--drop-users-indexes') > -1){
+    users.dropIndexes();
+}
 
 if(args.indexOf('--port-threads') > -1){
     threads.portThreads();
