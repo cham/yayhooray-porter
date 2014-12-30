@@ -1,17 +1,27 @@
 'use strict';
+var fs = require('fs');
 var failCount = 0;
 var delayMs = 10;
 var startDelayMs = 2000;
 var pageSize = 5000;
 
+function writeToFile(type, err, msg){
+    fs.appendFile('error.log', 'TYPE: ' + type + ', MSG: ' + msg + ', ERR: ' + err + '\n', function(err){
+        if(err){
+            console.log('COULD NOT WRITE ERROR TO FILE', err);
+            console.log('TYPE: ' + type + ', MSG: ' + msg + ', ERR: ' + err);
+        }
+    });
+}
+
 function logError(err, msg){
     failCount++;
     if(err.err){
         if(err.err.indexOf('E11000') > -1){
-            return console.log('duplicate', msg, err.err);
+            return writeToFile('duplicate', msg, err.err);
         }
     }
-    return console.log('fail', msg, err);
+    return writeToFile('fail', msg, err);
 }
 
 function logBatchProgress(timeTaken, records, failures, currentPage, numPages){
