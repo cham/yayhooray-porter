@@ -1,0 +1,15 @@
+{
+  "name": "yayhooray-porter",
+  "description": "Ports the yayhooray database from Codeigniter to Tesla format",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "async": "^0.9.0",
+    "mongoose": "^3.8.17",
+    "mysql": "^2.5.2",
+    "q": "^1.0.1"
+  },
+  "devDependencies": {
+    "winston": "^0.8.1"
+  }
+}
