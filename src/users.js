@@ -157,7 +157,8 @@ function selectUsers(cb){
 
     mysql
         .query('SELECT * FROM users AS u ' +
-               'LEFT JOIN user_profiles AS p ON u.id = p.user_id')
+               'LEFT JOIN user_profiles AS p ON u.id = p.user_id ' +
+               'ORDER BY u.comments_count DESC')
         .then(cb);
 
     mysql.close();
