@@ -15,6 +15,10 @@ options:
 - --port-relationships : ports buddy and ignore details for existing users from mysql to mongo
 - --delete-relationships : delete all relationship data from mongo
 - --delete-users : delete all users from mongo
+- --port-favorites : ports all favorites from mysql to mongo
+- --delete-favorites : deletes all favorites from mongo
+- --port-hidden : ports all hidden threads from mysql to mongo
+- --delete-hidden : deletes all hidden threads from mongo
 - --drop-users-indexes : drop user collection indexes from mongo
 - --port-threads : ports all threads (without comments!) from mysql to mongo
 - --delete-threads : deletes all threads from mongo

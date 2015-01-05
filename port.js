@@ -22,6 +22,18 @@ if(args.indexOf('--delete-users') > -1){
 if(args.indexOf('--drop-users-indexes') > -1){
     users.dropIndexes();
 }
+if(args.indexOf('--port-favorites') > -1){
+    users.portFavorites();
+}
+if(args.indexOf('--delete-favorites') > -1){
+    users.deleteFavorites();
+}
+if(args.indexOf('--port-hidden') > -1){
+    users.portHidden();
+}
+if(args.indexOf('--delete-hidden') > -1){
+    users.deleteHidden();
+}
 
 if(args.indexOf('--port-threads') > -1){
     threads.portThreads();

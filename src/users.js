@@ -4,6 +4,14 @@ var mongo = require('./mongo');
 var taskRunner = require('./taskrunner');
 var winston = require('winston');
 
+function onProgress(){
+
+}
+
+function onComplete(){
+    process.exit();
+}
+
 function deleteUser(userData){
     mongo
         .user
@@ -152,6 +160,85 @@ function translateRelationships(relationships){
     return translated;
 }
 
+function translateFavorite(favoriteData){
+    var originalId = favoriteData.thread_id;
+    var username = favoriteData.username;
+
+    mongo
+        .thread
+        .findOne({originalid: originalId})
+        .exec(function(err, thread){
+            if(err){
+                return taskRunner.logError(err);
+            }
+            if(!thread){
+                return taskRunner.logError(new Error('Thread not found'), originalId);
+            }
+            
+            mongo
+                .user
+                .findOne({username: username})
+                .exec(function(err, user){
+                    if(err){
+                        return taskRunner.logError(err, username);
+                    }
+                    if(!user){
+                        return taskRunner.logError(new Error('User not found'), username);
+                    }
+
+                    user.favourites.push(thread._id);
+
+                    user.save(function(err){
+                        if(err){
+                            return taskRunner.logError(err, username);
+                        }
+                    });
+                });
+        });
+}
+
+function translateHidden(favoriteData, done){
+    var originalId = favoriteData.thread_id;
+    var username = favoriteData.username;
+
+    mongo
+        .thread
+        .findOne({originalid: originalId})
+        .exec(function(err, thread){
+            if(err){
+                taskRunner.logError(err);
+                return done();
+            }
+            if(!thread){
+                taskRunner.logError(new Error('Thread not found'), originalId);
+                return done();
+            }
+            
+            mongo
+                .user
+                .findOne({username: username})
+                .exec(function(err, user){
+                    if(err){
+                        taskRunner.logError(err, username);
+                        return done();
+                    }
+                    if(!user){
+                        taskRunner.logError(new Error('User not found'), username);
+                        return done();
+                    }
+
+                    user.hidden.push(thread._id);
+
+                    user.save(function(err){
+                        if(err){
+                            taskRunner.logError(err, username);
+                        }
+                        done();
+                    });
+                });
+        });
+}
+
 function selectUsers(cb){
     mysql.connect();
 
@@ -176,6 +263,45 @@ function selectBuddies(cb){
         .then(cb);
 
     mysql.close();
+}
+
+function selectFavorites(cb){
+    mysql.connect();
+
+    mysql
+        .query('SELECT thread_id, u.username ' +
+               'FROM favorites AS f ' +
+               'LEFT JOIN users AS u on u.id = f.user_id')
+        .then(cb);
+
+    mysql.close();
+}
+
+function selectNumHidden(cb){
+    var query = 'SELECT COUNT(hidden_id) AS numrecords FROM hidden_threads';
+
+    mysql
+        .query(query)
+        .then(cb)
+        .catch(function(err){
+            console.log('MySQL err', err);
+        });
+}
+
+function selectHidden(page, cb){
+    var query = 'SELECT thread_id, u.username ' +
+                'FROM hidden_threads AS h ' +
+                'LEFT JOIN users AS u on u.id = h.user_id ' +
+                'LIMIT ' + taskRunner.pageSize + ' OFFSET ' + (page * taskRunner.pageSize);
+
+    console.log(query);
+
+    mysql
+        .query(query)
+        .then(cb)
+        .catch(function(err){
+            console.log('MySQL err', err, query);
+        });
 }
 
 function portAccounts(){
@@ -218,8 +344,59 @@ function dropIndexes(){
     });
 }
 
+function portFavorites(){
+    selectFavorites(function(rows){
+        taskRunner.runIterator(rows, translateFavorite);
+    });
+}
+
+function portHidden(){
+    taskRunner.batchSequential(selectNumHidden, selectHidden, translateHidden, onProgress, onComplete);
+    // selectHidden(function(rows){
+    //     taskRunner.runIterator(rows, translateHidden);
+    // });
+}
+
+function deleteFavorites(){
+    mongo.user.find().exec(function(err, users){
+        if(err){
+            return taskRunner.logError(err);
+        }
+        users.forEach(function(user, i){
+            user.favourites = [];
+            user.save(function(err){
+                if(err){
+                    return taskRunner.logError(err, user.username);
+                }
+                console.log('deleted favourites for user ' + i + ', ' + user.username);
+            });
+        });
+    });
+}
+
+function deleteHidden(){
+    mongo.user.find().exec(function(err, users){
+        if(err){
+            return taskRunner.logError(err);
+        }
+        users.forEach(function(user, i){
+            user.hidden = [];
+            user.save(function(err){
+                if(err){
+                    return taskRunner.logError(err, user.username);
+                }
+                console.log('deleted hidden for user ' + i + ', ' + user.username);
+            });
+        });
+    });
+}
+
 module.exports.portAccounts = portAccounts;
 module.exports.portRelationships = portRelationships;
 module.exports.deleteRelationships = deleteRelationships;
 module.exports.deleteUsers = deleteUsers;
 module.exports.dropIndexes = dropIndexes;
+module.exports.portFavorites = portFavorites;
+module.exports.deleteFavorites = deleteFavorites;
+module.exports.portHidden = portHidden;
+module.exports.deleteHidden = deleteHidden;
