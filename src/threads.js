@@ -59,12 +59,12 @@ function selectThreads(page, cb){
 function correctThreadTotals(){
     mongo
         .thread
-        .find({name: new RegExp('yayuk v2', 'i')})
+        .find({})
         .exec(function(err, threads){
             if(err){
                 return taskRunner.logError(err);
             }
-            threads.forEach(function(thread){
+            threads.forEach(function(thread, i){
                 mongo
                     .comment
                     .find({threadid: thread._id})
@@ -80,7 +80,12 @@ function correctThreadTotals(){
                         thread.last_comment_time = lastComment.created;
                         thread.numcomments = numComments;
 
-                        console.log(thread);
+                        thread.save(function(err){
+                            if(err){
+                                return taskRunner.logError(err);
+                            }
+                            console.log('done', i, thread._id);
+                        });
                     });
             });
         });
