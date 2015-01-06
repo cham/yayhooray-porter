@@ -56,6 +56,36 @@ function selectThreads(page, cb){
         .then(cb);
 }
 
+function correctThreadTotals(){
+    mongo
+        .thread
+        .find({name: new RegExp('yayuk v2', 'i')})
+        .exec(function(err, threads){
+            if(err){
+                return taskRunner.logError(err);
+            }
+            threads.forEach(function(thread){
+                mongo
+                    .comment
+                    .find({threadid: thread._id})
+                    .sort('created')
+                    .exec(function(err, comments){
+                        if(err){
+                            return taskRunner.logError(err);
+                        }
+                        var numComments = comments.length;
+                        var lastComment = comments[numComments-1];
+
+                        thread.last_comment_by = lastComment.postedby;
+                        thread.last_comment_time = lastComment.created;
+                        thread.numcomments = numComments;
+
+                        console.log(thread);
+                    });
+            });
+        });
+}
+
 function onProgress(){
 
 }
@@ -99,3 +129,4 @@ function deleteRangeCache(){
 module.exports.portThreads = portThreads;
 module.exports.deleteThreads = deleteThreads;
 module.exports.deleteRangeCache = deleteRangeCache;
+module.exports.correctThreadTotals = correctThreadTotals;

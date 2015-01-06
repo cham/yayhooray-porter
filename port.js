@@ -44,6 +44,9 @@ if(args.indexOf('--delete-threads') > -1){
 if(args.indexOf('--delete-rangecache') > -1){
     threads.deleteRangeCache();
 }
+if(args.indexOf('--correct-thread-totals') > -1){
+    threads.correctThreadTotals();
+}
 
 if(args.indexOf('--port-comments') > -1){
     comments.portComments();
