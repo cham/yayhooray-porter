@@ -352,9 +352,6 @@ function portFavorites(){
 
 function portHidden(){
     taskRunner.batchSequential(selectNumHidden, selectHidden, translateHidden, onProgress, onComplete);
-    // selectHidden(function(rows){
-    //     taskRunner.runIterator(rows, translateHidden);
-    // });
 }
 
 function deleteFavorites(){
@@ -391,6 +388,55 @@ function deleteHidden(){
     });
 }
 
+function removeIgnoredBuddies(){
+    mongo.user.find().exec(function(err, users){
+        if(err){
+            return taskRunner.logError(err);
+        }
+
+        var cursor = users.length - 1;
+
+        function next(){
+            if(cursor > 0){
+                cursor--;
+                fixAndNext();
+            }else{
+                console.log('done');
+                process.exit();
+            }
+        }
+
+        function fixAndNext(){
+            var user = users[cursor];
+            var fixApplied = false;
+
+            user.ignores = user.ignores.reduce(function(memo, username){
+                if(user.buddies.indexOf(username) === -1){
+                    memo.push(username);
+                }else{
+                    fixApplied = true;
+                }
+                return memo;
+            }, []);
+
+            if(!fixApplied){
+                return next();
+            }
+
+            user.save(function(err){
+                if(err){
+                    taskRunner.logError(err, user.username);
+                }else{
+                    console.log('fixed', user.username, user.ignores);
+                }
+                next();
+            });
+        }
+
+        fixAndNext();
+    });
+}
+
 module.exports.portAccounts = portAccounts;
 module.exports.portRelationships = portRelationships;
 module.exports.deleteRelationships = deleteRelationships;
@@ -400,3 +446,4 @@ module.exports.portFavorites = portFavorites;
 module.exports.deleteFavorites = deleteFavorites;
 module.exports.portHidden = portHidden;
 module.exports.deleteHidden = deleteHidden;
+module.exports.removeIgnoredBuddies = removeIgnoredBuddies;

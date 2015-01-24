@@ -10,7 +10,8 @@
     "async": "^0.9.0",
     "mongoose": "^3.8.17",
     "mysql": "^2.5.2",
-    "q": "^1.0.1"
+    "q": "^1.0.1",
+    "request": "^2.51.0"
   },
   "devDependencies": {
     "winston": "^0.8.1"

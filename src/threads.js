@@ -301,7 +301,9 @@ function correctThreadTotals(){
                     if(err){
                         taskRunner.logError(err);
                     }else{
-                        console.log('done ' + threadid + ' was ' + was + ' now ' + count);
+                        if(was !== count){
+                            console.log('done ' + threadid + ' was ' + was + ' now ' + count);
+                        }
                     }
                     done();
                 });

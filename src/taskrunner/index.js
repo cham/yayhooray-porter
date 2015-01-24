@@ -71,7 +71,7 @@ function runSequential(rows, eachRowFn, doneFn){
             if(rows[i]){
                 next();
             }else{
-                console.log('Sequence Complete! ' + i + ' records, ' + failCount + ' logged errors');
+                console.log('Sequence Complete! ' + i + ' records, ' + failCount + ' total logged errors so far');
                 doneFn(i, failCount);
             }
         });

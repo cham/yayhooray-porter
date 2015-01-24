@@ -2,10 +2,11 @@
 var users = require('./src/users');
 var threads = require('./src/threads');
 var comments = require('./src/comments');
+var avatars = require('./src/avatars');
 var mysql = require('./src/mysql');
 var args = process.argv;
 
-mysql.connect();
+// mysql.connect();
 
 if(args.indexOf('--port-users') > -1){
     users.portAccounts();
@@ -34,6 +35,9 @@ if(args.indexOf('--port-hidden') > -1){
 if(args.indexOf('--delete-hidden') > -1){
     users.deleteHidden();
 }
+if(args.indexOf('--remove-ignored-buddies') > -1){
+    users.removeIgnoredBuddies();
+}
 
 if(args.indexOf('--port-threads') > -1){
     threads.portThreads();
@@ -53,4 +57,8 @@ if(args.indexOf('--port-comments') > -1){
 }
 if(args.indexOf('--delete-comments') > -1){
     comments.deleteComments();
+}
+
+if(args.indexOf('--port-avatars') > -1){
+    avatars.portAvatars();
 }
